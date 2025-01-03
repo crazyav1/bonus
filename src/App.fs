@@ -1,4 +1,4 @@
-module Lit.TodoMVC.App
+module bonus.App
 
 open Lit
 
