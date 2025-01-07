@@ -1,35 +1,48 @@
-# Fable Minimal App
+# SAFE Template
 
-This is a simple Fable app including an [Elmish](https://elmish.github.io/) counter with as little configuration as possible. If you want to see a more complex app including commonly used F# tools like Paket or Fake, check [the Fulma demo](https://github.com/MangelMaxime/fulma-demo).
+This template can be used to generate a full-stack web application using the [SAFE Stack](https://safe-stack.github.io/). It was created using the dotnet [SAFE Template](https://safe-stack.github.io/docs/template-overview/). If you want to learn more about the template why not start with the [quick start](https://safe-stack.github.io/docs/quickstart/) guide?
 
-## Requirements
+## Install pre-requisites
 
-* [dotnet SDK](https://www.microsoft.com/net/download/core) 3.1 or higher
-* [node.js](https://nodejs.org) with [npm](https://www.npmjs.com/)
-* An F# editor like Visual Studio, Visual Studio Code with [Ionide](http://ionide.io/) or [JetBrains Rider](https://www.jetbrains.com/rider/).
+You'll need to install the following pre-requisites in order to build SAFE applications
 
-## Building and running the app
+* [.NET SDK](https://www.microsoft.com/net/download) 8.0 or higher
+* [Node 18](https://nodejs.org/en/download/) or higher
+* [NPM 9](https://www.npmjs.com/package/npm) or higher
 
-* Install JS dependencies (this will also invoke `dotnet tool restore`, check package.json scripts): `npm install`
-* Run Fable and Webpack server: `dotnet fable watch src --run webpack serve` or `npm start`
-* After the first compilation is finished, in your browser open: http://localhost:8080/
+## Starting the application
 
-Any modification you do to the F# code will be reflected in the web page after saving.
+To concurrently run the server and the client components in watch mode use the following command:
 
-## Project structure
+```bash
+dotnet run
+```
 
-### npm
+Then open `http://localhost:8080` in your browser.
 
-JS dependencies are declared in `package.json`, while `package-lock.json` is a lock file automatically generated.
+The build project in root directory contains a couple of different build targets. You can specify them after `--` (target name is case-insensitive).
 
-### Webpack
+To run concurrently server and client tests in watch mode (you can run this command in parallel to the previous one in new terminal):
 
-[Webpack](https://webpack.js.org) is a JS bundler with extensions, like a static dev server that enables hot reloading on code changes. Fable interacts with Webpack through the `fable-loader`. Configuration for Webpack is defined in the `webpack.config.js` file. Note this sample only includes basic Webpack configuration for development mode, if you want to see a more comprehensive configuration check the [Fable webpack-config-template](https://github.com/fable-compiler/webpack-config-template/blob/master/webpack.config.js).
+```bash
+dotnet run -- WatchRunTests
+```
 
-### F#
+Client tests are available under `http://localhost:8081` in your browser and server tests are running in watch mode in console.
 
-The sample only contains two F# files: the project (.fsproj) and a source file (.fs) in the `src` folder.
+Finally, there are `Bundle` and `Azure` targets that you can use to package your app and deploy to Azure, respectively:
 
-### Web assets
+```bash
+dotnet run -- Bundle
+dotnet run -- Azure
+```
 
-The `index.html` file and other assets like an icon can be found in the `public` folder.
+## SAFE Stack Documentation
+
+If you want to know more about the full Azure Stack and all of it's components (including Azure) visit the official [SAFE documentation](https://safe-stack.github.io/docs/).
+
+You will find more documentation about the used F# components at the following places:
+
+* [Saturn](https://saturnframework.org/)
+* [Fable](https://fable.io/docs/)
+* [Elmish](https://elmish.github.io/elmish/)

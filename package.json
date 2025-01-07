@@ -1,14 +1,18 @@
 {
-  "private": true,
-  "scripts": {
-    "postinstall": "dotnet tool restore",
-    "start": "dotnet fable watch src --run webpack serve"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "webpack": "^5.97.1",
-    "webpack-cli": "^6.0.1",
-    "webpack-dev-server": "^5.2.0"
-  }
+    "private": true,
+    "scripts": {},
+    "dependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.10.5",
+        "@vitejs/plugin-react": "^4.3.4",
+        "autoprefixer": "^10.4.20",
+        "mocha": "^11.0.1",
+        "postcss": "^8.4.49",
+        "sass": "^1.83.1",
+        "tailwindcss": "^3.4.17",
+        "vite": "^6.0.7"
+    }
 }
