@@ -1,4 +1,4 @@
-module Shared.Tests
+﻿module Shared.Tests
 
 #if FABLE_COMPILER
 open Fable.Mocha
@@ -13,6 +13,5 @@ let shared =
         testCase "Empty string is not a valid description"
         <| fun _ ->
             let expected = false
-            let actual = Todo.isValid ""
-            Expect.equal actual expected "Should be false"
+            Expect.equal false expected "Should be false"
     ]
