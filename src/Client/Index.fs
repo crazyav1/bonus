@@ -9,6 +9,7 @@ type Model = {
     EndDate: string
     NewResponse: RemoteData<Response>
     NewPowerSystemResponse: RemoteData<PowerSystemResponse>
+    NewCurrentPriceResponse: RemoteData<CurrentPriceResponse>
 }
 
 type Msg =
@@ -16,6 +17,7 @@ type Msg =
     | SetEndDate of string
     | LoadNewResponse of ApiCall<string * string, Response>
     | LoadPowerSystemResponse of ApiCall<string * string, PowerSystemResponse>
+    | LoadCurrentPrice of ApiCall<unit, CurrentPriceResponse>
 
 
 let eleringApi = Api.makeProxy<IEleringApi> ()
@@ -25,10 +27,11 @@ let init () =
         StartDate = ""
         EndDate = ""
         NewResponse = NotStarted
+        NewCurrentPriceResponse = NotStarted
         NewPowerSystemResponse = NotStarted
     }
-
-    initialModel, Cmd.none
+    let initialCmd = LoadCurrentPrice(Start()) |> Cmd.ofMsg
+    initialModel, initialCmd
 
 let update msg model =
     match msg with
@@ -72,6 +75,12 @@ let update msg model =
                     NewPowerSystemResponse = RemoteData.Loaded response
             },
             Cmd.none
+    | LoadCurrentPrice msg ->
+        match msg with
+        | Start() ->
+            let getCurrentPriceCmd = Cmd.OfAsync.perform eleringApi.getCurrentPriceData () (Finished >> LoadCurrentPrice)
+            { model with NewCurrentPriceResponse = model.NewCurrentPriceResponse.StartLoading() }, getCurrentPriceCmd
+        | Finished currentPriseResponse -> { model with NewCurrentPriceResponse = Loaded currentPriseResponse }, Cmd.none
 
 open Feliz
 open Feliz.Recharts
@@ -218,7 +227,36 @@ module ViewComponents =
                 Html.div [
                     prop.children [
                         Html.h2 [
-                            prop.text "NordPool day-ahead price data"
+                            prop.text "Current Price in Eur/MWh"
+                        ]
+                        match model.NewCurrentPriceResponse with
+                        | NotStarted -> Html.text "Not Started."
+                        | Loading None -> Html.text "Loading..."
+                        | Loading(Some response)
+                        | Loaded response ->
+                        Html.div [
+                            prop.text (
+                                response.priceData
+                                |> List.map (fun pd -> pd.price |> string)
+                                |> String.concat ", "
+                            )
+                            prop.children [
+                                 Html.span [
+                                        prop.text (
+                                             response.priceData
+                                             |> List.map (fun pd -> pd.price |> string)
+                                             |> String.concat ", "
+                                         )
+                                 ]
+                                 Html.span [
+                                      prop.className (if response.cached then "inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-800 ring-1 ring-inset ring-green-600/20" else "inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-800 ring-1 ring-inset ring-red-600/20")
+                                      prop.text (if response.cached then "Cached" else "Live")
+                                 ]
+                            ]
+                         ]
+
+                        Html.h2 [
+                            prop.text "NordPool day-ahead price data Eur/MWh"
                         ]
                         match model.NewResponse with
                         | NotStarted -> Html.text "Not Started."
@@ -226,14 +264,13 @@ module ViewComponents =
                         | Loading(Some response)
                         | Loaded response -> EleringChart response
                         Html.h2 [
-                            prop.text "Renewable Power system data"
+                            prop.text "Renewable Power system data in MWh"
                         ]
                         match model.NewPowerSystemResponse with
                         | NotStarted -> Html.text "Not Started."
                         | Loading None -> Html.text "Loading..."
                         | Loading(Some response)
                         | Loaded response ->  PowerSystemChart response
-
                     ]
                 ]
             ]

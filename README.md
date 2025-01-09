@@ -22,4 +22,13 @@ Then open a browser and navigate to `http://localhost:8080` to see the site.
 
 ## Application Overview
 
-This application is a dashboard for visualizing power system data from Elering. It displays various metrics such as prices, production of renewables over time.
+This application is a dashboard for visualizing power system data from Elering.
+It uses three endpoints to get the data:
+* `/api/nps/price` - Retrieves day-ahead price data.
+* `/api/system` - Retrieves power system data.
+* `/api/nps/price/EE/current` - Retrieves current price data(uses cache for storing endpoint result for 1 minute).
+
+Feliz.Recharts library is used for visualizing the data.
+## Screenshots
+
+![Screenshot](/src/Client/Public/screenshot.png)

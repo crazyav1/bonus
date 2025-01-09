@@ -1,5 +1,7 @@
 module Server
 
+open System.Runtime.Caching
+open System
 open System.Net.Http
 open System.Text.Json
 open System.Text.Json.Serialization
@@ -7,9 +9,7 @@ open SAFE
 open Saturn
 open Shared
 
-module Storage =
-    let addTodo todo =
-        Error "Invalid todo"
+let cache = MemoryCache.Default
 
 let dataUrl = "https://dashboard.elering.ee/api"
 
@@ -28,6 +28,7 @@ let parsePowerSystemData (jsonArray: JsonElement) =
     })
     |> List.ofSeq
 
+
 let eleringApi ctx = {
     getDayAheadPriceData = fun (request: Request) -> async {
         printfn "Request: %A" request
@@ -37,18 +38,17 @@ let eleringApi ctx = {
         let! response = client.GetStringAsync(url) |> Async.AwaitTask
         let json = JsonDocument.Parse(response).RootElement
 
-        let parsePriceData (jsonArray: JsonElement) =
+        let parsePriceData (jsonArray: JsonElement) : PriceData list =
             jsonArray.EnumerateArray()
             |> Seq.map (fun item -> { timestamp = item.GetProperty("timestamp").GetInt32(); price = item.GetProperty("price").GetDouble() })
             |> List.ofSeq
 
-        let priceData = {
+        return Response.create (json.GetProperty("success").GetBoolean(), {
             ee = parsePriceData (json.GetProperty("data").GetProperty("ee"))
             lv = parsePriceData (json.GetProperty("data").GetProperty("lv"))
             lt = parsePriceData (json.GetProperty("data").GetProperty("lt"))
             fi = parsePriceData (json.GetProperty("data").GetProperty("fi"))
-        }
-        return Response.create (json.GetProperty("success").GetBoolean(), priceData)
+        })
     }
 
     getPowerSystemData= fun (request: Request) -> async {
@@ -62,6 +62,34 @@ let eleringApi ctx = {
         let powerSystemData = parsePowerSystemData (json.GetProperty("data"))
         return PowerSystemResponse.create (powerSystemData, json.GetProperty("success").GetBoolean())
         }
+
+    getCurrentPriceData = fun () -> async {
+        try
+            let cacheKey = "currentPriceData"
+            match cache.Get(cacheKey) with
+            | :? CurrentPriceResponse as cachedData -> return { cachedData with cached = true }
+            | _ ->
+                let url = $"{dataUrl}/nps/price/EE/current"
+                printfn "URL: %s" url
+                use client = new HttpClient()
+                let! response = client.GetStringAsync(url) |> Async.AwaitTask
+                let json = JsonDocument.Parse(response).RootElement
+                let parseCurrentPriceData (jsonArray: JsonElement): PriceData list =
+                    jsonArray.EnumerateArray()
+                    |> Seq.map (fun item -> { timestamp = item.GetProperty("timestamp").GetInt32(); price = item.GetProperty("price").GetDouble() })
+                    |> List.ofSeq
+                let result = CurrentPriceResponse.create (parseCurrentPriceData (json.GetProperty("data")), false)
+
+                let cacheItemPolicy = CacheItemPolicy()
+                cacheItemPolicy.AbsoluteExpiration <- DateTimeOffset.Now.AddMinutes(1.0)
+                cache.Set(cacheKey, result, cacheItemPolicy)
+
+                return result
+        with
+        | ex ->
+            printfn "An error occurred: %s" ex.Message
+            return CurrentPriceResponse.create ([], false)
+    }
 }
 
 let webApp = Api.make eleringApi

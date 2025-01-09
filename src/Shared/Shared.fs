@@ -24,6 +24,17 @@ type Response = {
     data: Data
 }
 
+type CurrentPriceResponse = {
+    priceData: PriceData list
+    cached : bool
+}
+
+module CurrentPriceResponse =
+    let create (currentPriceData: PriceData list, cached: bool) = {
+        priceData = currentPriceData
+        cached = cached
+    }
+
 module Response =
     let create (success: bool, data: Data) = {
         success = success
@@ -65,4 +76,5 @@ module Request =
 type IEleringApi = {
     getDayAheadPriceData: Request -> Async<Response>
     getPowerSystemData: Request -> Async<PowerSystemResponse>
+    getCurrentPriceData: unit -> Async<CurrentPriceResponse>
 }
