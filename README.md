@@ -31,4 +31,4 @@ It uses three endpoints to get the data:
 Feliz.Recharts library is used for visualizing the data.
 ## Screenshots
 
-![Screenshot](/src/Client/Public/screenshot.png)
+![Screenshot](/screenshot.png)
