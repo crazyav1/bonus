@@ -22,4 +22,4 @@ Then open a browser and navigate to `http://localhost:8080` to see the site.
 
 ## Application Overview
 
-This application is a dashboard for visualizing power system data from Elering. It displays various metrics such as production, consumption, losses, frequency, system balance, AC balance, production renewable, and solar energy production over time.
+This application is a dashboard for visualizing power system data from Elering. It displays various metrics such as prices, production of renewables over time.
